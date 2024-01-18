@@ -1,8 +1,6 @@
 # coding=utf-8
-# Converts the Baichuan2-7B model in the same format as LLaMA2-7B.
-# Usage: python llamafy_baichuan2.py --input_dir input --output_dir output --shard_size 10GB
-# Inspired by: https://huggingface.co/fireballoon/baichuan-llama-7b/blob/main/convert_baichuan_to_llama.py
-# Converted model: https://huggingface.co/hiyouga/Baichuan2-7B-Base-LLaMAfied
+# Converts the InternLM2 model in the same format as LLaMA2.
+# Usage: python llamafy_internlm2.py --input_dir input --output_dir output --shard_size 10GB
 
 import os
 import fire
@@ -30,21 +28,42 @@ def save_weight(
     shard_size: str,
     save_safetensors: bool
 ):
-    baichuan2_state_dict: Dict[str, torch.Tensor] = OrderedDict()
+    with open(os.path.join(input_dir, CONFIG_NAME), "r", encoding="utf-8") as f:
+        internlm2_config_dict: Dict[str, Any] = json.load(f)
+
+    internlm2_state_dict: Dict[str, torch.Tensor] = OrderedDict()
     for filepath in tqdm(os.listdir(input_dir), desc="Load weights"):
         if os.path.isfile(os.path.join(input_dir, filepath)) and filepath.endswith(".bin"):
             shard_weight = torch.load(os.path.join(input_dir, filepath), map_location="cpu")
-            baichuan2_state_dict.update(shard_weight)
+            internlm2_state_dict.update(shard_weight)
 
     llama2_state_dict: Dict[str, torch.Tensor] = OrderedDict()
-    for key, value in tqdm(baichuan2_state_dict.items(), desc="Convert format"):
-        if "W_pack" in key:
-            proj_size = value.size(0) // 3
-            llama2_state_dict[key.replace("W_pack", "q_proj")] = value[:proj_size, :]
-            llama2_state_dict[key.replace("W_pack", "k_proj")] = value[proj_size:2*proj_size, :]
-            llama2_state_dict[key.replace("W_pack", "v_proj")] = value[2*proj_size:, :]
-        elif "lm_head" in key:
-            llama2_state_dict[key] = torch.nn.functional.normalize(value)
+    for key, value in tqdm(internlm2_state_dict.items(), desc="Convert format"):
+        if "output" in key:
+            llama2_state_dict[key.replace("output", "lm_head")] = value
+        elif "tok_embeddings" in key:
+            llama2_state_dict[key.replace("tok_embeddings", "embed_tokens")] = value
+        elif "attention_norm" in key:
+            llama2_state_dict[key.replace("attention_norm", "input_layernorm")] = value
+        elif "wqkv" in key:
+            proj_size = value.size(0)
+            num_q_heads = internlm2_config_dict["num_attention_heads"]
+            num_kv_heads = internlm2_config_dict["num_key_value_heads"]
+            q_size = proj_size // (num_q_heads + 2 * num_kv_heads) * num_q_heads
+            kv_size = proj_size // (num_q_heads + 2 * num_kv_heads) * num_kv_heads
+            llama2_state_dict[key.replace("attention.wqkv", "self_attn.q_proj")] = value[:q_size, ...]
+            llama2_state_dict[key.replace("attention.wqkv", "self_attn.k_proj")] = value[q_size:q_size+kv_size, ...]
+            llama2_state_dict[key.replace("attention.wqkv", "self_attn.v_proj")] = value[q_size+kv_size:, ...]
+        elif "wo" in key:
+            llama2_state_dict[key.replace("attention.wo", "self_attn.o_proj")] = value
+        elif "ffn_norm" in key:
+            llama2_state_dict[key.replace("ffn_norm", "post_attention_layernorm")] = value
+        elif "w1" in key:
+            llama2_state_dict[key.replace("feed_forward.w1", "mlp.gate_proj")] = value
+        elif "w2" in key:
+            llama2_state_dict[key.replace("feed_forward.w2", "mlp.down_proj")] = value
+        elif "w3" in key:
+            llama2_state_dict[key.replace("feed_forward.w3", "mlp.up_proj")] = value
         else:
             llama2_state_dict[key] = value
 
@@ -56,7 +75,7 @@ def save_weight(
             save_file(shard, os.path.join(output_dir, shard_file), metadata={"format": "pt"})
         else:
             torch.save(shard, os.path.join(output_dir, shard_file))
-    
+
     if index is None:
         print("Model weights saved in {}".format(os.path.join(output_dir, WEIGHTS_NAME)))
     else:
@@ -75,7 +94,8 @@ def save_config(
 
     llama2_config_dict["architectures"] = ["LlamaForCausalLM"]
     llama2_config_dict.pop("auto_map", None)
-    llama2_config_dict.pop("tokenizer_class", None)
+    llama2_config_dict.pop("bias", None)
+    llama2_config_dict.pop("rope_scaling", None)
     llama2_config_dict["model_type"] = "llama"
 
     with open(os.path.join(output_dir, CONFIG_NAME), "w", encoding="utf-8") as f:
@@ -83,7 +103,7 @@ def save_config(
     print("Model config saved in {}".format(os.path.join(output_dir, CONFIG_NAME)))
 
 
-def llamafy_baichuan2(
+def llamafy_internlm2(
     input_dir: str,
     output_dir: str,
     shard_size: str,
@@ -95,8 +115,8 @@ def llamafy_baichuan2(
         raise print("Output dir already exists", e)
 
     save_weight(input_dir, output_dir, shard_size, save_safetensors)
-    save_config(input_dir, output_dir)    
+    save_config(input_dir, output_dir)
 
 
 if __name__ == "__main__":
-    fire.Fire(llamafy_baichuan2)
+    fire.Fire(llamafy_internlm2)
