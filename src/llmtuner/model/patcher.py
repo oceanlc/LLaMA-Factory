@@ -205,12 +205,11 @@ def _prepare_model_for_training(
         if not getattr(model, "supports_gradient_checkpointing", False):
             logger.warning("Current model does not support gradient checkpointing.")
         else:
-            model.enable_input_require_grads()
-            model.gradient_checkpointing_enable()
+            model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
             model.config.use_cache = False # turn off when gradient checkpointing is enabled
             logger.info("Gradient checkpointing enabled.")
 
-    if hasattr(model, output_layer_name):
+    if hasattr(model, output_layer_name) and model_args.upcast_lmhead_output:
         def fp32_forward_post_hook(module: torch.nn.Module, args: Tuple[torch.Tensor], output: torch.Tensor):
             return output.to(torch.float32)
 
