@@ -219,21 +219,31 @@ register_model_group(
 
 register_model_group(
     models={
-        "DeepSeekLLM-7B-Base": {
+        "DeepSeek-LLM-7B-Base": {
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-llm-7b-base",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-llm-7b-base",
         },
-        "DeepSeekLLM-67B-Base": {
+        "DeepSeek-LLM-67B-Base": {
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-llm-67b-base",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-llm-67b-base",
         },
-        "DeepSeekLLM-7B-Chat": {
+        "DeepSeek-LLM-7B-Chat": {
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-llm-7b-chat",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-llm-7b-chat",
         },
-        "DeepSeekLLM-67B-Chat": {
+        "DeepSeek-LLM-67B-Chat": {
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-llm-67b-chat",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-llm-67b-chat",
+        },
+        "DeepSeek-Math-7B-Base": {DownloadSource.DEFAULT: "deepseek-ai/deepseek-math-7b-base"},
+        "DeepSeek-Math-7B-Chat": {DownloadSource.DEFAULT: "deepseek-ai/deepseek-math-7b-instruct"},
+        "DeepSeek-MoE-16B-Base": {
+            DownloadSource.DEFAULT: "deepseek-ai/deepseek-moe-16b-base",
+            DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-moe-16b-base",
+        },
+        "DeepSeek-MoE-16B-Chat": {
+            DownloadSource.DEFAULT: "deepseek-ai/deepseek-moe-16b-chat",
+            DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-moe-16b-chat",
         },
     },
     template="deepseek",
@@ -246,6 +256,7 @@ register_model_group(
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-coder-6.7b-base",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-coder-6.7b-base",
         },
+        "DeepSeekCoder-7B-Base": {DownloadSource.DEFAULT: "deepseek-ai/deepseek-coder-7b-base-v1.5"},
         "DeepSeekCoder-33B-Base": {
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-coder-33b-base",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-coder-33b-base",
@@ -254,27 +265,13 @@ register_model_group(
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-coder-6.7b-instruct",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-coder-6.7b-instruct",
         },
+        "DeepSeekCoder-7B-Chat": {DownloadSource.DEFAULT: "deepseek-ai/deepseek-coder-7b-instruct-v1.5"},
         "DeepSeekCoder-33B-Chat": {
             DownloadSource.DEFAULT: "deepseek-ai/deepseek-coder-33b-instruct",
             DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-coder-33b-instruct",
         },
     },
     template="deepseekcoder",
-)
-
-
-register_model_group(
-    models={
-        "DeepSeekMoE-16B-Base": {
-            DownloadSource.DEFAULT: "deepseek-ai/deepseek-moe-16b-base",
-            DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-moe-16b-base",
-        },
-        "DeepSeekMoE-16B-Chat": {
-            DownloadSource.DEFAULT: "deepseek-ai/deepseek-moe-16b-chat",
-            DownloadSource.MODELSCOPE: "deepseek-ai/deepseek-moe-16b-chat",
-        },
-    },
-    template="deepseek",
 )
 
 
@@ -551,6 +548,109 @@ register_model_group(
         },
     },
     module="c_attn",
+    template="qwen",
+)
+
+
+register_model_group(
+    models={
+        "Qwen1.5-0.5B": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-0.5B",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-0.5B",
+        },
+        "Qwen1.5-1.8B": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-1.8B",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-1.8B",
+        },
+        "Qwen1.5-4B": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-4B",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-4B",
+        },
+        "Qwen1.5-7B": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-7B",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-7B",
+        },
+        "Qwen1.5-14B": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-14B",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-14B",
+        },
+        "Qwen1.5-72B": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-72B",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-72B",
+        },
+        "Qwen1.5-0.5B-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-0.5B-Chat",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-0.5B-Chat",
+        },
+        "Qwen1.5-1.8B-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-1.8B-Chat",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-1.8B-Chat",
+        },
+        "Qwen1.5-4B-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-4B-Chat",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-4B-Chat",
+        },
+        "Qwen1.5-7B-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-7B-Chat",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-7B-Chat",
+        },
+        "Qwen1.5-14B-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-14B-Chat",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-14B-Chat",
+        },
+        "Qwen1.5-72B-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-72B-Chat",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-72B-Chat",
+        },
+        "Qwen1.5-0.5B-int8-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-0.5B-Chat-GPTQ-Int8",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-0.5B-Chat-GPTQ-Int8",
+        },
+        "Qwen1.5-0.5B-int4-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-0.5B-Chat-GPTQ-Int4",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-0.5B-Chat-GPTQ-Int4",
+        },
+        "Qwen1.5-1.8B-int8-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-1.8B-Chat-GPTQ-Int8",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-1.8B-Chat-GPTQ-Int8",
+        },
+        "Qwen1.5-1.8B-int4-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-1.8B-Chat-GPTQ-Int4",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-1.8B-Chat-GPTQ-Int4",
+        },
+        "Qwen1.5-4B-int8-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-4B-Chat-GPTQ-Int8",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-4B-Chat-GPTQ-Int8",
+        },
+        "Qwen1.5-4B-int4-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-4B-Chat-GPTQ-Int4",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-4B-Chat-GPTQ-Int4",
+        },
+        "Qwen1.5-7B-int8-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-7B-Chat-GPTQ-Int8",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-7B-Chat-GPTQ-Int8",
+        },
+        "Qwen1.5-7B-int4-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-7B-Chat-GPTQ-Int4",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-7B-Chat-GPTQ-Int4",
+        },
+        "Qwen1.5-14B-int8-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-14B-Chat-GPTQ-Int8",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-14B-Chat-GPTQ-Int8",
+        },
+        "Qwen1.5-14B-int4-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-14B-Chat-GPTQ-Int4",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-14B-Chat-GPTQ-Int4",
+        },
+        "Qwen1.5-72B-int8-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-72B-Chat-GPTQ-Int8",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-72B-Chat-GPTQ-Int8",
+        },
+        "Qwen1.5-72B-int4-Chat": {
+            DownloadSource.DEFAULT: "Qwen/Qwen1.5-72B-Chat-GPTQ-Int4",
+            DownloadSource.MODELSCOPE: "qwen/Qwen1.5-72B-Chat-GPTQ-Int4",
+        },
+    },
     template="qwen",
 )
 
