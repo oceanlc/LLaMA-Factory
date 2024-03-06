@@ -74,6 +74,9 @@ class LoraArguments:
         default=False,
         metadata={"help": "Whether or not to use the rank stabilization scaling factor for LoRA layer."},
     )
+    use_dora: Optional[bool] = field(
+        default=False, metadata={"help": "Whether or not to use the weight-decomposed lora method (DoRA)."}
+    )
     create_new_adapter: Optional[bool] = field(
         default=False,
         metadata={"help": "Whether or not to create a new adapter with randomly initialized weight."},
@@ -90,7 +93,7 @@ class RLHFArguments:
         default=0.1,
         metadata={"help": "The beta parameter for the DPO loss."},
     )
-    dpo_loss: Optional[Literal["sigmoid", "hinge", "ipo", "kto"]] = field(
+    dpo_loss: Optional[Literal["sigmoid", "hinge", "ipo", "kto_pair"]] = field(
         default="sigmoid",
         metadata={"help": "The type of DPO loss to use."},
     )
@@ -169,10 +172,6 @@ class FinetuningArguments(FreezeArguments, LoraArguments, RLHFArguments):
     use_llama_pro: Optional[bool] = field(
         default=False,
         metadata={"help": "Whether or not to make only the parameters in the expanded blocks trainable."},
-    )
-    disable_version_checking: Optional[bool] = field(
-        default=False,
-        metadata={"help": "Whether or not to disable version checking."},
     )
     plot_loss: Optional[bool] = field(
         default=False,
