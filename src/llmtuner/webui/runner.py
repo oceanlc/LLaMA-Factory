@@ -52,6 +52,8 @@ class Runner:
         get = lambda name: data[self.manager.get_elem_by_name(name)]
         lang, model_name, model_path = get("top.lang"), get("top.model_name"), get("top.model_path")
         dataset = get("train.dataset") if do_train else get("eval.dataset")
+        stage = TRAINING_STAGES[get("train.training_stage")]
+        reward_model = get("train.reward_model")
 
         if self.running:
             return ALERTS["err_conflict"][lang]
@@ -64,6 +66,9 @@ class Runner:
 
         if len(dataset) == 0:
             return ALERTS["err_no_dataset"][lang]
+
+        if stage == "ppo" and not reward_model:
+            return ALERTS["err_no_reward_model"][lang]
 
         if not from_preview and self.demo_mode:
             return ALERTS["err_demo"][lang]
@@ -113,7 +118,7 @@ class Runner:
             quantization_bit=int(get("top.quantization_bit")) if get("top.quantization_bit") in ["8", "4"] else None,
             template=get("top.template"),
             rope_scaling=get("top.rope_scaling") if get("top.rope_scaling") in ["linear", "dynamic"] else None,
-            flash_attn=(get("top.booster") == "flash_attn"),
+            flash_attn=(get("top.booster") == "flashattn"),
             use_unsloth=(get("top.booster") == "unsloth"),
             dataset_dir=get("train.dataset_dir"),
             dataset=",".join(get("train.dataset")),
@@ -129,13 +134,17 @@ class Runner:
             save_steps=get("train.save_steps"),
             warmup_steps=get("train.warmup_steps"),
             neftune_noise_alpha=get("train.neftune_alpha") or None,
+            optim=get("train.optim"),
             resize_vocab=get("train.resize_vocab"),
             sft_packing=get("train.sft_packing"),
             upcast_layernorm=get("train.upcast_layernorm"),
             use_llama_pro=get("train.use_llama_pro"),
+            shift_attn=get("train.shift_attn"),
+            use_galore=get("train.use_galore"),
             output_dir=get_save_dir(get("top.model_name"), get("top.finetuning_type"), get("train.output_dir")),
             fp16=(get("train.compute_type") == "fp16"),
             bf16=(get("train.compute_type") == "bf16"),
+            pure_bf16=(get("train.compute_type") == "pure_bf16"),
         )
         args["disable_tqdm"] = True
 
@@ -159,8 +168,11 @@ class Runner:
                 args["num_layer_trainable"] = int(get("train.num_layer_trainable"))
 
         if args["stage"] == "ppo":
-            args["reward_model"] = get_save_dir(
-                get("top.model_name"), get("top.finetuning_type"), get("train.reward_model")
+            args["reward_model"] = ",".join(
+                [
+                    get_save_dir(get("top.model_name"), get("top.finetuning_type"), adapter)
+                    for adapter in get("train.reward_model")
+                ]
             )
             args["reward_model_type"] = "lora" if args["finetuning_type"] == "lora" else "full"
 
@@ -174,6 +186,12 @@ class Runner:
             args["eval_steps"] = args["save_steps"]
             args["per_device_eval_batch_size"] = args["per_device_train_batch_size"]
             args["load_best_model_at_end"] = args["stage"] not in ["rm", "ppo"]
+
+        if args["use_galore"]:
+            args["galore_rank"] = get("train.galore_rank")
+            args["galore_update_interval"] = get("train.galore_update_interval")
+            args["galore_scale"] = get("train.galore_scale")
+            args["galore_target"] = get("train.galore_target")
 
         return args
 
@@ -200,7 +218,7 @@ class Runner:
             quantization_bit=int(get("top.quantization_bit")) if get("top.quantization_bit") in ["8", "4"] else None,
             template=get("top.template"),
             rope_scaling=get("top.rope_scaling") if get("top.rope_scaling") in ["linear", "dynamic"] else None,
-            flash_attn=(get("top.booster") == "flash_attn"),
+            flash_attn=(get("top.booster") == "flashattn"),
             use_unsloth=(get("top.booster") == "unsloth"),
             dataset_dir=get("eval.dataset_dir"),
             dataset=",".join(get("eval.dataset")),

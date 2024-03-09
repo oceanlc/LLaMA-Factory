@@ -174,6 +174,7 @@ def _configure_quantization(
             require_version(
                 "transformers>=4.39.0.dev0", "To fix: pip install git+https://github.com/huggingface/transformers.git"
             )
+            require_version("aqlm>=1.1.0", "To fix: pip install aqlm[gpu]>=1.1.0")
             quantization_config["bits"] = 2
 
         quant_bits = quantization_config.get("bits", "?")
@@ -286,9 +287,9 @@ def patch_config(
 
     init_kwargs["torch_dtype"] = model_args.compute_dtype
     if not is_deepspeed_zero3_enabled():
-        init_kwargs["low_cpu_mem_usage"] = True
-        if "device_map" not in init_kwargs:
-            init_kwargs["device_map"] = {"": get_current_device()} if is_trainable else "auto"
+        init_kwargs["low_cpu_mem_usage"] = model_args.low_cpu_mem_usage
+        if "device_map" not in init_kwargs:  # quant models cannot use auto device map
+            init_kwargs["device_map"] = model_args.device_map or {"": get_current_device()}
 
 
 def patch_model(

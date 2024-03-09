@@ -48,9 +48,10 @@ https://github.com/hiyouga/LLaMA-Factory/assets/16256802/ec36a9dd-37f4-4f72-81bd
 - **多种模型**：LLaMA、Mistral、Mixtral-MoE、Qwen、Yi、Gemma、Baichuan、ChatGLM、Phi 等等。
 - **集成方法**：（增量）预训练、指令监督微调、奖励模型训练、PPO 训练和 DPO 训练。
 - **多种精度**：32 比特全参数微调、16 比特冻结微调、16 比特 LoRA 微调和基于 AQLM/AWQ/GPTQ/LLM.int8 的 2/4/8 比特 QLoRA 微调。
-- **先进算法**：DoRA、LongLoRA、LLaMA Pro、LoftQ 和 Agent 微调。
+- **先进算法**：GaLore、DoRA、LongLoRA、LLaMA Pro、LoftQ 和 Agent 微调。
 - **实用技巧**：FlashAttention-2、Unsloth、RoPE scaling、NEFTune 和 rsLoRA。
 - **实验监控**：LlamaBoard、TensorBoard、Wandb、MLflow 等等。
+- **极速推理**：基于 vLLM 的 OpenAI 风格 API、浏览器界面和命令行接口。
 
 ## 性能指标
 
@@ -69,17 +70,21 @@ https://github.com/hiyouga/LLaMA-Factory/assets/16256802/ec36a9dd-37f4-4f72-81bd
 
 ## 更新日志
 
+[24/03/07] 我们支持了梯度低秩投影（**[GaLore](https://arxiv.org/abs/2403.03507)**）算法。请使用 `--use_galore` 参数切换显存高效的优化器。
+
+[24/03/07] 我们集成了 **[vLLM](https://github.com/vllm-project/vllm)** 以实现极速并发推理。请使用 `--infer_backend vllm` 来获得 **270%** 的推理速度。（尚不支持 LoRA，请先合并权重。）
+
 [24/02/28] 我们支持了 **[DoRA](https://arxiv.org/abs/2402.09353)** 微调。请使用 `--use_dora` 参数进行 DoRA 微调。
 
 [24/02/15] 我们支持了 [LLaMA Pro](https://github.com/TencentARC/LLaMA-Pro) 提出的**块扩展**方法。详细用法请参照 `scripts/llama_pro.py`。
 
-[24/02/05] Qwen1.5（Qwen2 测试版）系列模型已在 LLaMA-Factory 中实现微调支持。详情请查阅该[博客页面](https://qwenlm.github.io/zh/blog/qwen1.5/)。
-
 <details><summary>展开日志</summary>
+
+[24/02/05] Qwen1.5（Qwen2 测试版）系列模型已在 LLaMA-Factory 中实现微调支持。详情请查阅该[博客页面](https://qwenlm.github.io/zh/blog/qwen1.5/)。
 
 [24/01/18] 我们针对绝大多数模型实现了 **Agent 微调**，微调时指定 `--dataset glaive_toolcall` 即可使模型获得工具调用能力。
 
-[23/12/23] 我们针对 LLaMA, Mistral 和 Yi 模型支持了 **[unsloth](https://github.com/unslothai/unsloth)** 的 LoRA 训练加速。请使用 `--use_unsloth` 参数启用 unsloth 优化。该方法可提供 1.7 倍的训练速度，详情请查阅[此页面](https://github.com/hiyouga/LLaMA-Factory/wiki/Performance-comparison)。
+[23/12/23] 我们针对 LLaMA, Mistral 和 Yi 模型支持了 **[unsloth](https://github.com/unslothai/unsloth)** 的 LoRA 训练加速。请使用 `--use_unsloth` 参数启用 unsloth 优化。该方法可提供 **170%** 的训练速度，详情请查阅[此页面](https://github.com/hiyouga/LLaMA-Factory/wiki/Performance-comparison)。
 
 [23/12/12] 我们支持了微调最新的混合专家模型 **[Mixtral 8x7B](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1)**。硬件需求请查阅[此处](#硬件依赖)。
 
@@ -134,7 +139,7 @@ https://github.com/hiyouga/LLaMA-Factory/assets/16256802/ec36a9dd-37f4-4f72-81bd
 | [Qwen1.5](https://huggingface.co/Qwen)                   | 0.5B/1.8B/4B/7B/14B/72B     | q_proj,v_proj     | qwen      |
 | [StarCoder2](https://huggingface.co/bigcode)             | 3B/7B/15B                   | q_proj,v_proj     | -         |
 | [XVERSE](https://huggingface.co/xverse)                  | 7B/13B/65B                  | q_proj,v_proj     | xverse    |
-| [Yi](https://huggingface.co/01-ai)                       | 6B/34B                      | q_proj,v_proj     | yi        |
+| [Yi](https://huggingface.co/01-ai)                       | 6B/9B/34B                   | q_proj,v_proj     | yi        |
 | [Yuan](https://huggingface.co/IEITYuan)                  | 2B/51B/102B                 | q_proj,v_proj     | yuan      |
 
 > [!NOTE]
@@ -249,7 +254,7 @@ huggingface-cli login
 | 必需项       | 至少     | 推荐      |
 | ------------ | ------- | --------- |
 | python       | 3.8     | 3.10      |
-| torch        | 1.13.1  | 2.2.1     |
+| torch        | 1.13.1  | 2.2.0     |
 | transformers | 4.37.2  | 4.38.2    |
 | datasets     | 2.14.3  | 2.17.1    |
 | accelerate   | 0.27.2  | 0.27.2    |
@@ -259,7 +264,7 @@ huggingface-cli login
 | 可选项       | 至少     | 推荐      |
 | ------------ | ------- | --------- |
 | CUDA         | 11.6    | 12.2      |
-| deepspeed    | 0.10.0  | 0.13.4    |
+| deepspeed    | 0.10.0  | 0.13.1    |
 | bitsandbytes | 0.39.0  | 0.41.3    |
 | flash-attn   | 2.3.0   | 2.5.5     |
 
@@ -267,13 +272,19 @@ huggingface-cli login
 
 \* *估算值*
 
-| 训练方法 | 精度 |   7B  |  13B  |  30B  |   65B  |   8x7B |
+| 训练方法 | 精度 |   7B  |  13B  |  30B  |   70B  |   8x7B |
 | ------- | ---- | ----- | ----- | ----- | ------ | ------ |
-| 全参数   |  16  | 160GB | 320GB | 600GB | 1200GB |  900GB |
-| 部分参数 |  16  |  20GB |  40GB | 120GB |  240GB |  200GB |
-| LoRA    |  16  |  16GB |  32GB |  80GB |  160GB |  120GB |
-| QLoRA   |   8  |  10GB |  16GB |  40GB |   80GB |   80GB |
-| QLoRA   |   4  |   6GB |  12GB |  24GB |   48GB |   32GB |
+| 全参数   | AMP  | 120GB | 240GB | 600GB | 1200GB |  900GB |
+| 全参数   |  16  |  60GB | 120GB | 300GB |  600GB |  400GB |
+| GaLore  |  16  |  28GB |  60GB | 150GB |  300GB |  200GB |
+| 部分参数 |  16  |  20GB |  40GB |  80GB |  200GB |  160GB |
+| LoRA    |  16  |  16GB |  32GB |  64GB |  160GB |  120GB |
+| QLoRA   |   8  |  10GB |  20GB |  40GB |   80GB |   60GB |
+| QLoRA   |   4  |   6GB |  12GB |  24GB |   48GB |   30GB |
+| QLoRA   |   2  |   4GB |   8GB |  16GB |   24GB |   18GB |
+
+> [!NOTE]
+> 上述 GaLore 的结果中不包含逐层权重更新。
 
 ## 如何使用
 
@@ -474,11 +485,10 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
 #### 使用 Huggingface Accelerate
 
 ```bash
-accelerate config # 首先配置分布式环境
-accelerate launch src/train_bash.py # 参数同上
+accelerate launch --config_file config.yaml src/train_bash.py # 参数同上
 ```
 
-<details><summary>LoRA 训练的 Accelerate 配置示例</summary>
+<details><summary>使用 Accelerate 进行 LoRA 训练的 config.yaml 示例</summary>
 
 ```yaml
 compute_environment: LOCAL_MACHINE
@@ -512,7 +522,7 @@ deepspeed --num_gpus 8 src/train_bash.py \
     ... # 参数同上
 ```
 
-<details><summary>使用 DeepSpeed ZeRO-2 进行全参数训练的 DeepSpeed 配置示例</summary>
+<details><summary>使用 DeepSpeed ZeRO-2 进行全参数训练的 ds_config.json 示例</summary>
 
 ```json
 {
@@ -553,7 +563,7 @@ deepspeed --num_gpus 8 src/train_bash.py \
 ### 合并 LoRA 权重并导出模型
 
 ```bash
-python src/export_model.py \
+CUDA_VISIBLE_DEVICES=0 python src/export_model.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
@@ -574,7 +584,7 @@ python src/export_model.py \
 ### 使用 OpenAI 风格 API 推理
 
 ```bash
-python src/api_demo.py \
+CUDA_VISIBLE_DEVICES=0 API_PORT=8000 python src/api_demo.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
@@ -587,7 +597,7 @@ python src/api_demo.py \
 ### 使用命令行推理
 
 ```bash
-python src/cli_demo.py \
+CUDA_VISIBLE_DEVICES=0 python src/cli_demo.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
@@ -597,7 +607,7 @@ python src/cli_demo.py \
 ### 使用浏览器推理
 
 ```bash
-python src/web_demo.py \
+CUDA_VISIBLE_DEVICES=0 python src/web_demo.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \

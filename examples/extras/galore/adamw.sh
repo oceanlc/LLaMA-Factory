@@ -1,15 +1,14 @@
 #!/bin/bash
 
-deepspeed --num_gpus 4 ../../src/train_bash.py \
-    --deepspeed ds_z3_config.json \
+CUDA_VISIBLE_DEVICES=0 python ../../../src/train_bash.py \
     --stage sft \
     --do_train \
     --model_name_or_path meta-llama/Llama-2-7b-hf \
-    --dataset alpaca_gpt4_en \
-    --dataset_dir ../../data \
+    --dataset alpaca_gpt4_en,glaive_toolcall \
+    --dataset_dir ../../../data \
     --template default \
     --finetuning_type full \
-    --output_dir ../../saves/LLaMA2-7B/full/sft \
+    --output_dir ../../../saves/LLaMA2-7B/galore/sft \
     --overwrite_cache \
     --overwrite_output_dir \
     --cutoff_len 1024 \
@@ -23,10 +22,10 @@ deepspeed --num_gpus 4 ../../src/train_bash.py \
     --save_steps 100 \
     --eval_steps 100 \
     --evaluation_strategy steps \
+    --load_best_model_at_end \
     --learning_rate 5e-5 \
     --num_train_epochs 3.0 \
     --max_samples 3000 \
     --val_size 0.1 \
-    --ddp_timeout 1800000 \
     --plot_loss \
     --fp16

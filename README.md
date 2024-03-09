@@ -47,10 +47,11 @@ Choose your path:
 
 - **Various models**: LLaMA, Mistral, Mixtral-MoE, Qwen, Yi, Gemma, Baichuan, ChatGLM, Phi, etc.
 - **Integrated methods**: (Continuous) pre-training, supervised fine-tuning, reward modeling, PPO and DPO.
-- **Scalable resources**: 32-bit full-tuning, 16-bit freeze-tuning, 16-bit LoRA, 2/4/8-bit QLoRA via AQLM/AWQ/GPTQ/LLM.int8.
-- **Advanced algorithms**: DoRA, LongLoRA, LLaMA Pro, LoftQ, agent tuning.
-- **Practical tricks**: FlashAttention-2, Unsloth, RoPE scaling, NEFTune, rsLoRA.
+- **Scalable resources**: 32-bit full-tuning, 16-bit freeze-tuning, 16-bit LoRA and 2/4/8-bit QLoRA via AQLM/AWQ/GPTQ/LLM.int8.
+- **Advanced algorithms**: GaLore, DoRA, LongLoRA, LLaMA Pro, LoftQ and Agent tuning.
+- **Practical tricks**: FlashAttention-2, Unsloth, RoPE scaling, NEFTune and rsLoRA.
 - **Experiment monitors**: LlamaBoard, TensorBoard, Wandb, MLflow, etc.
+- **Faster inference**: OpenAI-style API, Gradio UI and CLI with vLLM worker.
 
 ## Benchmark
 
@@ -69,17 +70,21 @@ Compared to ChatGLM's [P-Tuning](https://github.com/THUDM/ChatGLM2-6B/tree/main/
 
 ## Changelog
 
+[24/03/07] We supported gradient low-rank projection (**[GaLore](https://arxiv.org/abs/2403.03507)**) algorithm. Try `--use_galore` to use the memory-efficient optimizer.
+
+[24/03/07] We integrated **[vLLM](https://github.com/vllm-project/vllm)** for faster and concurrent inference. Try `--infer_backend vllm` to enjoy **270%** inference speed. (LoRA is not yet supported, merge it first.)
+
 [24/02/28] We supported weight-decomposed LoRA (**[DoRA](https://arxiv.org/abs/2402.09353)**). Try `--use_dora` to activate DoRA training.
 
 [24/02/15] We supported **block expansion** proposed by [LLaMA Pro](https://github.com/TencentARC/LLaMA-Pro). See `scripts/llama_pro.py` for usage.
 
-[24/02/05] Qwen1.5 (Qwen2 beta version) series models are supported in LLaMA-Factory. Check this [blog post](https://qwenlm.github.io/blog/qwen1.5/) for details.
-
 <details><summary>Full Changelog</summary>
+
+[24/02/05] Qwen1.5 (Qwen2 beta version) series models are supported in LLaMA-Factory. Check this [blog post](https://qwenlm.github.io/blog/qwen1.5/) for details.
 
 [24/01/18] We supported **agent tuning** for most models, equipping model with tool using abilities by fine-tuning with `--dataset glaive_toolcall`.
 
-[23/12/23] We supported **[unsloth](https://github.com/unslothai/unsloth)**'s implementation to boost LoRA tuning for the LLaMA, Mistral and Yi models. Try `--use_unsloth` argument to activate unsloth patch. It achieves 1.7x speed in our benchmark, check [this page](https://github.com/hiyouga/LLaMA-Factory/wiki/Performance-comparison) for details.
+[23/12/23] We supported **[unsloth](https://github.com/unslothai/unsloth)**'s implementation to boost LoRA tuning for the LLaMA, Mistral and Yi models. Try `--use_unsloth` argument to activate unsloth patch. It achieves **170%** speed in our benchmark, check [this page](https://github.com/hiyouga/LLaMA-Factory/wiki/Performance-comparison) for details.
 
 [23/12/12] We supported fine-tuning the latest MoE model **[Mixtral 8x7B](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1)** in our framework. See hardware requirement [here](#hardware-requirement).
 
@@ -134,7 +139,7 @@ Compared to ChatGLM's [P-Tuning](https://github.com/THUDM/ChatGLM2-6B/tree/main/
 | [Qwen1.5](https://huggingface.co/Qwen)                   | 0.5B/1.8B/4B/7B/14B/72B     | q_proj,v_proj     | qwen      |
 | [StarCoder2](https://huggingface.co/bigcode)             | 3B/7B/15B                   | q_proj,v_proj     | -         |
 | [XVERSE](https://huggingface.co/xverse)                  | 7B/13B/65B                  | q_proj,v_proj     | xverse    |
-| [Yi](https://huggingface.co/01-ai)                       | 6B/34B                      | q_proj,v_proj     | yi        |
+| [Yi](https://huggingface.co/01-ai)                       | 6B/9B/34B                   | q_proj,v_proj     | yi        |
 | [Yuan](https://huggingface.co/IEITYuan)                  | 2B/51B/102B                 | q_proj,v_proj     | yuan      |
 
 > [!NOTE]
@@ -249,7 +254,7 @@ huggingface-cli login
 | Mandatory    | Minimum | Recommend |
 | ------------ | ------- | --------- |
 | python       | 3.8     | 3.10      |
-| torch        | 1.13.1  | 2.2.1     |
+| torch        | 1.13.1  | 2.2.0     |
 | transformers | 4.37.2  | 4.38.2    |
 | datasets     | 2.14.3  | 2.17.1    |
 | accelerate   | 0.27.2  | 0.27.2    |
@@ -259,7 +264,7 @@ huggingface-cli login
 | Optional     | Minimum | Recommend |
 | ------------ | ------- | --------- |
 | CUDA         | 11.6    | 12.2      |
-| deepspeed    | 0.10.0  | 0.13.4    |
+| deepspeed    | 0.10.0  | 0.13.1    |
 | bitsandbytes | 0.39.0  | 0.41.3    |
 | flash-attn   | 2.3.0   | 2.5.5     |
 
@@ -267,13 +272,19 @@ huggingface-cli login
 
 \* *estimated*
 
-| Method | Bits |   7B  |  13B  |  30B  |   65B  |   8x7B |
+| Method | Bits |   7B  |  13B  |  30B  |   70B  |   8x7B |
 | ------ | ---- | ----- | ----- | ----- | ------ | ------ |
-| Full   |  16  | 160GB | 320GB | 600GB | 1200GB |  900GB |
-| Freeze |  16  |  20GB |  40GB | 120GB |  240GB |  200GB |
-| LoRA   |  16  |  16GB |  32GB |  80GB |  160GB |  120GB |
-| QLoRA  |   8  |  10GB |  16GB |  40GB |   80GB |   80GB |
-| QLoRA  |   4  |   6GB |  12GB |  24GB |   48GB |   32GB |
+| Full   | AMP  | 120GB | 240GB | 600GB | 1200GB |  900GB |
+| Full   |  16  |  60GB | 120GB | 300GB |  600GB |  400GB |
+| GaLore |  16  |  28GB |  60GB | 150GB |  300GB |  200GB |
+| Freeze |  16  |  20GB |  40GB |  80GB |  200GB |  160GB |
+| LoRA   |  16  |  16GB |  32GB |  64GB |  160GB |  120GB |
+| QLoRA  |   8  |  10GB |  20GB |  40GB |   80GB |   60GB |
+| QLoRA  |   4  |   6GB |  12GB |  24GB |   48GB |   30GB |
+| QLoRA  |   2  |   4GB |   8GB |  16GB |   24GB |   18GB |
+
+> [!NOTE]
+> We report the GaLore results without per-layer weight updates.
 
 ## Getting Started
 
@@ -475,11 +486,10 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
 #### Use Huggingface Accelerate
 
 ```bash
-accelerate config # configure the environment
-accelerate launch src/train_bash.py # arguments (same as above)
+accelerate launch --config_file config.yaml src/train_bash.py # arguments (same as above)
 ```
 
-<details><summary>Example config for LoRA training</summary>
+<details><summary>Example config.yaml for LoRA training</summary>
 
 ```yaml
 compute_environment: LOCAL_MACHINE
@@ -513,7 +523,7 @@ deepspeed --num_gpus 8 src/train_bash.py \
     ... # arguments (same as above)
 ```
 
-<details><summary>Example config for full-parameter training with DeepSpeed ZeRO-2</summary>
+<details><summary>Example ds_config.json for full-parameter training with DeepSpeed ZeRO-2</summary>
 
 ```json
 {
@@ -554,7 +564,7 @@ deepspeed --num_gpus 8 src/train_bash.py \
 ### Merge LoRA weights and export model
 
 ```bash
-python src/export_model.py \
+CUDA_VISIBLE_DEVICES=0 python src/export_model.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
@@ -575,7 +585,7 @@ python src/export_model.py \
 ### Inference with OpenAI-style API
 
 ```bash
-python src/api_demo.py \
+CUDA_VISIBLE_DEVICES=0 API_PORT=8000 python src/api_demo.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
@@ -588,7 +598,7 @@ python src/api_demo.py \
 ### Inference with command line
 
 ```bash
-python src/cli_demo.py \
+CUDA_VISIBLE_DEVICES=0 python src/cli_demo.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
@@ -598,7 +608,7 @@ python src/cli_demo.py \
 ### Inference with web browser
 
 ```bash
-python src/web_demo.py \
+CUDA_VISIBLE_DEVICES=0 python src/web_demo.py \
     --model_name_or_path path_to_llama_model \
     --adapter_name_or_path path_to_checkpoint \
     --template default \
