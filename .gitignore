@@ -167,6 +167,6 @@ cache/
 outputs/
 scripts/
 mydata/
-chat.ipynb
+*.ipynb
 exported_models/
 myscripts/
