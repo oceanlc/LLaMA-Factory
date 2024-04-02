@@ -87,16 +87,25 @@ class CustomDPOTrainer(DPOTrainer):
     def concatenated_forward(
         self, model: "PreTrainedModel", batch: Dict[str, "torch.Tensor"]
     ) -> Tuple["torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor"]:
+        r"""
+        Computes the sum log probabilities of the labels under the given logits if loss_type != IPO.
+
+        Otherwise the average log probabilities.
+        """
         batch_copied = BatchEncoding({k: v.detach().clone() for k, v in batch.items()})  # avoid error
 
-        all_logits = model(
-            input_ids=batch_copied["input_ids"], attention_mask=batch_copied["attention_mask"], return_dict=True
+        all_logits: "torch.Tensor" = model(
+            input_ids=batch_copied["input_ids"],
+            attention_mask=batch_copied["attention_mask"],
+            return_dict=True,
+            use_cache=False,
         ).logits.to(torch.float32)
 
         all_logps = self.get_batch_logps(
-            all_logits,
-            batch["labels"],
-            average_log_prob=False,
+            logits=all_logits,
+            labels=batch_copied["labels"],
+            average_log_prob=(self.loss_type == "ipo"),
+            is_encoder_decoder=self.is_encoder_decoder,
             label_pad_token_id=self.label_pad_token_id,
         )
         batch_size = batch["input_ids"].size(0) // 2
@@ -142,11 +151,10 @@ class CustomDPOTrainer(DPOTrainer):
             reference_chosen_logps,
             reference_rejected_logps,
         )
-        batch_loss = losses.mean()
         if self.ftx_gamma > 1e-6:
             batch_size = batch["input_ids"].size(0) // 2
             chosen_labels, _ = batch["labels"].split(batch_size, dim=0)
-            batch_loss += self.ftx_gamma * self.sft_loss(policy_chosen_logits, chosen_labels).mean()
+            losses += self.ftx_gamma * self.sft_loss(policy_chosen_logits, chosen_labels)
 
         reward_accuracies = (chosen_rewards > rejected_rewards).float()
 
@@ -160,4 +168,4 @@ class CustomDPOTrainer(DPOTrainer):
         metrics["{}logits/rejected".format(prefix)] = policy_rejected_logits.detach().cpu().mean()
         metrics["{}logits/chosen".format(prefix)] = policy_chosen_logits.detach().cpu().mean()
 
-        return batch_loss, metrics
+        return losses.mean(), metrics
