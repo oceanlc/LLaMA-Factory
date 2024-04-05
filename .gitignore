@@ -170,3 +170,5 @@ mydata/
 *.ipynb
 exported_models/
 myscripts/
+ner_eval.py
+ee_eval.py
