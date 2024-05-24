@@ -165,7 +165,6 @@ saves/
 cache/
 
 outputs/
-scripts/
 mydata/
 *.ipynb
 exported_models/
