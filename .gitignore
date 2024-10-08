@@ -167,3 +167,9 @@ config/
 saves/
 output/
 wandb/
+
+outputs/
+mydata/
+*.ipynb
+exported_models/
+myscripts/
